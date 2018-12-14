@@ -1,0 +1,3 @@
+user: 'YOUR_USERNAME_HERE'
+password: 'YOUR_PASSWORD_HERE'
+base_url: 'https://api.outbrain.com/amplify/v0.1/'
