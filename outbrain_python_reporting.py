@@ -17,9 +17,22 @@ outb = outbrain.OutbrainAmplifyApi()
 def authorize(outb, creds):
 	try:
 		outb.token = creds["token"]
+		token_gen_date = datetime.datetime.strptime(creds["token_generated_on"],"%Y-%m-%d__%H_%M_%S")
+		if (datetime.datetime.now() - datetime.timedelta(days=28)) > token_gen_date:
+			print("Token was created more than 28 days ago, re-authorizing...")
+			outb.token = outb.get_token(outb.user, outb.password)
+			creds["token"] = outb.token
+			creds["token_generated_on"] = datetime.datetime.now().strftime("%Y-%m-%d__%H_%M_%S")
+			with open("outbrain.yml", "w") as f:
+				yaml.dump(creds, f, default_flow_style=False)
+		else:
+			print("Token was created less than 28 days ago, no authorization needed. Continuing...")
 	except KeyError:
 		outb.token = outb.get_token(outb.user, outb.password)
-		yaml.dump({"token": outb.token}, open("outbrain.yml", "a"), default_flow_style=False)
+		creds["token"] = outb.token
+		creds["token_generated_on"] = datetime.datetime.now().strftime("%Y-%m-%d__%H_%M_%S")
+		with open("outbrain.yml", "w") as f:
+			yaml.dump(creds, f, default_flow_style=False)
 
 def get_camp_ids_names_containing_str(marketer_id, string):
 	all_campaigns = outb.get_campaigns_per_marketer(marketer_id).get(marketer_id[0])
